@@ -1,0 +1,58 @@
+Entities:
+
+Application:
+
+Category:
+    Properties:
+    - Title
+    - Color
+
+    Behaviors:
+    - Create a new category
+    - List User Category with progress status
+    - Edit a category
+
+
+
+Task:
+    Properties:
+    - Title
+    - DueDate
+    - Category
+    - IsDone
+
+    Behaviors:
+    - Create a new Task
+    - List User Today Tasks
+    - List User Tasks by Date
+    - Change task status (Done/Undone)
+    - Edit a task
+
+
+User:
+  Properties:
+  - ID
+  - Email
+  - Password
+
+Behavior:
+    - Register a user
+    - Login user
+
+
+User Story:
+    - User can create a new category
+    - User can add a new task
+    - User can see category list
+    - User can see the today's tasks
+    - User can see tasks by date
+    - User can Done/Undone a task
+    - User can edit a task
+    - User can edit category
+    - User should be registered
+    - User should be able to login to the application
+
+
+SOLID:
+    Single Responsibility
+    - Function / Method must have just one actor/reason for change
