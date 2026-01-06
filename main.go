@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -31,17 +32,25 @@ type User struct {
 }
 
 type Task struct {
-	ID       uint
-	Title    string
-	DueDate  string
-	Category string
-	IsDone   bool
-	UserID   uint
+	ID         uint
+	Title      string
+	DueDate    string
+	CategoryID uint
+	IsDone     bool
+	UserID     uint
+}
+
+type Category struct {
+	ID     uint
+	Title  string
+	Color  string
+	UserID uint
 }
 
 // Global variable - just reachable in this packge
 var userStorage []User
 var taskStorage []Task
+var categoryStorage []Category
 var authenticatedUser *User
 
 var commandList = []string{
@@ -56,7 +65,6 @@ func runCommand(command string) {
 	if command != "register-user" && command != "exit" && authenticatedUser == nil {
 		userLogin()
 
-		
 		if authenticatedUser == nil {
 			return
 		}
@@ -96,17 +104,41 @@ func createTask() {
 	scanner.Scan()
 	dueDate = scanner.Text()
 
-	fmt.Printf("Enter task category: ")
+	fmt.Printf("Enter task category-id: %v", categoryStorage)
 	scanner.Scan()
 	category = scanner.Text()
+	categoryID, err := strconv.Atoi(category)
+
+	if err != nil {
+		fmt.Printf("Category ID isn't a valid integer: %v\n", err)
+
+		return
+
+	}
+
+	isFound := false
+
+	for _, ctg := range categoryStorage {
+		if ctg.ID == uint(categoryID) && ctg.UserID == authenticatedUser.ID {
+			isFound = true
+
+			break
+		}
+	} 
+
+	if !isFound {
+		fmt.Println("Category ID not found!")
+
+		return
+	}
 
 	task := Task{
-		ID:       uint(len(taskStorage)) + 1,
-		Title:    title,
-		DueDate:  dueDate,
-		Category: category,
-		IsDone:   false,
-		UserID:   authenticatedUser.ID,
+		ID:         uint(len(taskStorage)) + 1,
+		Title:      title,
+		DueDate:    dueDate,
+		CategoryID: uint(categoryID),
+		IsDone:     false,
+		UserID:     authenticatedUser.ID,
 	}
 
 	taskStorage = append(taskStorage, task)
@@ -135,6 +167,15 @@ func createCategory() {
 	fmt.Printf("Enter category color: ")
 	scanner.Scan()
 	color = scanner.Text()
+
+	category := Category{
+		ID:     uint(len(categoryStorage) + 1),
+		Title:  title,
+		Color:  color,
+		UserID: authenticatedUser.ID,
+	}
+
+	categoryStorage = append(categoryStorage, category)
 
 	fmt.Println("Category:", title, color)
 
