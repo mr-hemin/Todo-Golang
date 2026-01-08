@@ -212,8 +212,11 @@ func registerUser() {
 
 	userStorage = append(userStorage, user)
 
-	fmt.Println("User:", user.ID, user.Name, user.Email, user.Password)
+	writeUserToFile(user)
 
+}
+
+func writeUserToFile(user User) {
 	// Save user data  in user.txt file
 	var file *os.File
 
@@ -224,6 +227,8 @@ func registerUser() {
 		return
 	}
 
+	defer file.Close()
+
 	data := fmt.Sprintf("ID: %d, Name: %s, Email: %s, Password: %s\n", user.ID, user.Name, user.Email, user.Password)
 	numberOfWrittenBytes, wrtErr := file.Write([]byte(data))
 	if wrtErr != nil {
@@ -233,7 +238,6 @@ func registerUser() {
 	}
 
 	fmt.Println("Number of written bytes:", numberOfWrittenBytes)
-	file.Close()
 
 }
 
@@ -242,6 +246,8 @@ func loadUserStorageFromeFile() {
 	if err != nil {
 		fmt.Println("Can't open the file:", err)
 	}
+
+	defer file.Close()
 
 	var data = make([]byte, 10240)
 
