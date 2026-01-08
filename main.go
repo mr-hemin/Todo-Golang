@@ -71,7 +71,6 @@ func runCommand(command string) {
 
 	}
 
-
 	switch command {
 	case "create-task":
 		createTask()
@@ -124,7 +123,7 @@ func createTask() {
 
 			break
 		}
-	} 
+	}
 
 	if !isFound {
 		fmt.Println("Category ID not found!")
@@ -207,6 +206,29 @@ func registerUser() {
 	userStorage = append(userStorage, user)
 
 	fmt.Println("User:", user.ID, user.Name, user.Email, user.Password)
+
+	// Save user data  in user.txt file
+	var file *os.File
+	path := "user.txt"
+
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Can't create or open file:", err)
+
+		return
+	}
+
+	data := fmt.Sprintf("ID: %d, name: %s, Email: %s, Password: %s\n", user.ID, user.Name, user.Email, user.Password)
+	numberOfWrittenBytes, wrtErr := file.Write([]byte(data))
+	if wrtErr != nil {
+		fmt.Printf("Can't write to the file :%v\n", wrtErr)
+
+		return
+	}
+
+	fmt.Println("Number of written bytes:", numberOfWrittenBytes)
+	file.Close()
+
 }
 
 // Get user email and password
