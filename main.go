@@ -6,9 +6,13 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func main() {
+	// Load user storage from file
+	loadUserStorageFromeFile()
+
 	fmt.Println("*** Todo application ***")
 
 	command := flag.String("command", "no-command", "Command to execute")
@@ -53,10 +57,13 @@ var taskStorage []Task
 var categoryStorage []Category
 var authenticatedUser *User
 
+const userStoragePath = "user.txt"
+
 var commandList = []string{
 	"create-task",
 	"task-list",
 	"create-category",
+	"user-login",
 	"register-user",
 	"exit",
 }
@@ -209,16 +216,15 @@ func registerUser() {
 
 	// Save user data  in user.txt file
 	var file *os.File
-	path := "user.txt"
 
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(userStoragePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println("Can't create or open file:", err)
 
 		return
 	}
 
-	data := fmt.Sprintf("ID: %d, name: %s, Email: %s, Password: %s\n", user.ID, user.Name, user.Email, user.Password)
+	data := fmt.Sprintf("ID: %d, Name: %s, Email: %s, Password: %s\n", user.ID, user.Name, user.Email, user.Password)
 	numberOfWrittenBytes, wrtErr := file.Write([]byte(data))
 	if wrtErr != nil {
 		fmt.Printf("Can't write to the file :%v\n", wrtErr)
@@ -228,6 +234,69 @@ func registerUser() {
 
 	fmt.Println("Number of written bytes:", numberOfWrittenBytes)
 	file.Close()
+
+}
+
+func loadUserStorageFromeFile() {
+	file, err := os.Open(userStoragePath)
+	if err != nil {
+		fmt.Println("Can't open the file:", err)
+	}
+
+	var data = make([]byte, 10240)
+
+	_, opnErr := file.Read(data)
+
+	if opnErr != nil {
+		fmt.Println("Can't read from the file:", opnErr)
+	}
+
+	dataStrSlice := strings.Split(string(data), "\n")
+
+	fmt.Println(dataStrSlice)
+	fmt.Println()
+
+	for _, userLine := range dataStrSlice {
+		if userLine == "" {
+			continue
+		}
+
+		userFileds := strings.Split(userLine, ", ")
+		var user = User{}
+
+		for _, field := range userFileds {
+			values := strings.Split(field, ": ")
+			if len(values) != 2 {
+				fmt.Println("Field isn't valid skipping...", len(values))
+				continue
+			}
+
+			fieldName := strings.ReplaceAll(values[0], " ", "")
+			fieldValue := values[1]
+
+			switch fieldName {
+			case "ID":
+				id, err := strconv.Atoi(fieldValue)
+				if err != nil {
+					fmt.Println("strconv error:", err)
+				}
+
+				user.ID = uint(id)
+
+			case "Name":
+				user.Name = fieldValue
+			case "Email":
+				user.Email = fieldValue
+			case "Password":
+				user.Password = fieldValue
+			}
+
+		}
+
+		fmt.Printf("User: %+v\n", user)
+
+		fmt.Println()
+	}
 
 }
 
