@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -222,17 +224,24 @@ func registerUser() {
 	scanner.Scan()
 	password = scanner.Text()
 
+
 	user := User{
 		ID:       uint(len(userStorage)) + 1,
 		Name:     name,
 		Email:    email,
-		Password: password,
+		Password: hashPassword(password),
 	}
 
 	userStorage = append(userStorage, user)
 
 	writeUserToFile(user)
 
+}
+
+func hashPassword(password string) string {
+	hash := md5.Sum([]byte(password))
+
+	return hex.EncodeToString(hash[:])
 }
 
 func writeUserToFile(user User) {
@@ -400,7 +409,7 @@ func userLogin() {
 	inputPassword = scanner.Text()
 
 	for _, user := range userStorage {
-		if user.Email == inputEmail && user.Password == inputPassword {
+		if user.Email == inputEmail && user.Password == hashPassword(inputPassword) {
 			fmt.Println("User Logged In Successfully!")
 			authenticatedUser = &user
 
