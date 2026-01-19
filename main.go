@@ -37,9 +37,7 @@ func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		fmt.Println(userStorage)
 		runCommand(UserFileStore, *command)
-		fmt.Println("Users:", userStorage)
 		fmt.Printf("Enter a command %v: ", commandList)
 		scanner.Scan()
 		*command = scanner.Text()
@@ -78,17 +76,18 @@ const (
 )
 
 var commandList = []string{
-	"create-task",
-	"task-list",
-	"create-category",
-	"user-login",
 	"register-user",
+	"login-iser",
+	"users-list",
+	"create-category",
+	"create-task",
+	"tasks-list",
 	"exit",
 }
 
 func runCommand(store contract.UserWriteStore, command string) {
 	if command != "register-user" && command != "exit" && authenticatedUser == nil {
-		userLogin()
+		loginUser()
 
 		if authenticatedUser == nil {
 			return
@@ -97,22 +96,49 @@ func runCommand(store contract.UserWriteStore, command string) {
 	}
 
 	switch command {
-	case "create-task":
-		createTask()
-	case "create-category":
-		createCategory()
 	case "register-user":
 		registerUser(store)
-	case "task-list":
-		taskList()
-	case "user-login":
-		userLogin()
+	case "login-user":
+		loginUser()
+	case "users-list":
+		usersList()
+	case "create-category":
+		createCategory()
+	case "create-task":
+		createTask()
+	case "tasks-list":
+		tasksList()
 	case "exit":
 		os.Exit(0)
 	default:
 		fmt.Println("Command not recognized")
 
 	}
+}
+
+func createCategory() {
+	scanner := bufio.NewScanner(os.Stdin)
+	var title, color string
+
+	fmt.Printf("Enter category title: ")
+	scanner.Scan()
+	title = scanner.Text()
+
+	fmt.Printf("Enter category color: ")
+	scanner.Scan()
+	color = scanner.Text()
+
+	category := Category{
+		ID:     uint(len(categoryStorage) + 1),
+		Title:  title,
+		Color:  color,
+		UserID: authenticatedUser.ID,
+	}
+
+	categoryStorage = append(categoryStorage, category)
+
+	fmt.Println("Category:", title, color)
+
 }
 
 func createTask() {
@@ -171,38 +197,13 @@ func createTask() {
 
 }
 
-func taskList() {
+func tasksList() {
 	for _, task := range taskStorage {
 		if task.UserID == authenticatedUser.ID {
 			fmt.Println(task)
 		}
 
 	}
-}
-
-func createCategory() {
-	scanner := bufio.NewScanner(os.Stdin)
-	var title, color string
-
-	fmt.Printf("Enter category title: ")
-	scanner.Scan()
-	title = scanner.Text()
-
-	fmt.Printf("Enter category color: ")
-	scanner.Scan()
-	color = scanner.Text()
-
-	category := Category{
-		ID:     uint(len(categoryStorage) + 1),
-		Title:  title,
-		Color:  color,
-		UserID: authenticatedUser.ID,
-	}
-
-	categoryStorage = append(categoryStorage, category)
-
-	fmt.Println("Category:", title, color)
-
 }
 
 func registerUser(store contract.UserWriteStore) {
@@ -243,7 +244,7 @@ func hashPassword(password string) string {
 
 // Get user email and password
 // Checks if there is a user record with corresponding data: allow user to continue
-func userLogin() {
+func loginUser() {
 	fmt.Println("* User Login *")
 	scanner := bufio.NewScanner(os.Stdin)
 	var inputEmail, inputPassword string
@@ -267,4 +268,14 @@ func userLogin() {
 
 	fmt.Println("Email or Password isn't correct!")
 
+}
+
+func usersList() {
+	fmt.Println("*** Users ***")
+
+	for _, user := range userStorage {
+		fmt.Printf("%+v\n", user)
+	}
+
+	fmt.Println()
 }
