@@ -20,15 +20,7 @@ func main() {
 	// Load user storage from file
 	// loadUserStorageFromFile(*serializeMode)
 
-	var userReadFileStore userReadStore
-
-	var userReadStore = fileStore{
-		filePath: "./store/data.txt",
-	}
-
-	userReadFileStore = userReadStore
-
-	loadUserFromStorage(userReadFileStore, *serializeMode)
+	loadUserFromStorage(UserFileStore, *serializeMode)
 
 	fmt.Println("*** Todo application ***")
 
@@ -90,6 +82,10 @@ const (
 	JsonSerializationMode = "json"
 )
 
+var UserFileStore = fileStore{
+	filePath: userStoragePath,
+}
+
 var commandList = []string{
 	"create-task",
 	"task-list",
@@ -109,21 +105,13 @@ func runCommand(command string) {
 
 	}
 
-	var store userWriteStore
-
-	var UserFileStore = fileStore{
-		filePath: "./store/user.txt",
-	}
-
-	store = UserFileStore
-
 	switch command {
 	case "create-task":
 		createTask()
 	case "create-category":
 		createCategory()
 	case "register-user":
-		registerUser(store)
+		registerUser(UserFileStore)
 	case "task-list":
 		taskList()
 	case "user-login":
@@ -275,13 +263,13 @@ type fileStore struct {
 }
 
 func (f fileStore) Save(u User) {
-	writeUserToFile(u)
+	f.writeUserToFile(u)
 }
 
 func (f fileStore) Load(serializationMode string) []User {
 	var uStorage []User
 
-	file, err := os.Open(userStoragePath)
+	file, err := os.Open(f.filePath)
 	if err != nil {
 		fmt.Println("Can't open the file:", err)
 
@@ -343,11 +331,11 @@ func (f fileStore) Load(serializationMode string) []User {
 
 }
 
-func writeUserToFile(user User) {
+func (f fileStore) writeUserToFile(user User) {
 	// Save user data  in user.txt file
 	var file *os.File
 
-	file, err := os.OpenFile(userStoragePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(f.filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println("Can't create or open file:", err)
 
